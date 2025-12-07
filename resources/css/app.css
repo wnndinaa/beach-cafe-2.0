@@ -1,0 +1,104 @@
+.main-background-customer {
+    margin-top: 70px;
+    background-color: rgba(65, 131, 212, 1);
+}
+
+.main-background-staff {
+    margin-top: 70px;
+    background-color: rgb(55, 212, 139);
+    background-color: #37d48b;
+}
+
+.main-img {
+    margin: 40px 0px;
+    min-width: 100px;
+    max-width: 230px;
+    height: auto;
+}
+
+.text-nav {
+    font-size: larger;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    margin-left: 60px;
+}
+
+.fade-in {
+    animation: fadeIn 1s ease-out;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+}
+
+.bg-gradient-green {
+    background: linear-gradient(90deg, #1e8a58, #25eb46);
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 0.75rem;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.6em;
+}
+
+.star-rating {
+    display: inline-flex;
+    direction: rtl;
+}
+
+.star {
+    font-size: 2rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+input[type="radio"]:checked ~ label,
+input[type="radio"]:checked ~ label ~ label {
+    color: gold;
+}
+
+.star:hover,
+.star:hover ~ label {
+    color: #ffc107;
+}
+
+.star-disp {
+    font-size: 2rem;
+    margin-right: 4px;
+    display: flex;
+}
+.filled {
+    color: gold;
+}
+.empty {
+    color: lightgray;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

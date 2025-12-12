@@ -27,23 +27,23 @@ class OrderController extends Controller
     {
         // Now you can use both orderId and menuId
         $menus = OrderItems::with(['order', 'menu'])  // Eager load 'order' and 'menu'
-            ->where('order_id', $orderId)  // Filter by order_id
-            ->where('menu_id', $menuId)    // Filter by menu_id
-            ->whereHas('order', function ($query) {
-                $query->where('order_status', 'pending'); // Ensure the order's status is 'pending'
-            })
-            ->get();
-
-
+        ->where('order_id', $orderId)  // Filter by order_id
+        ->where('menu_id', $menuId)    // Filter by menu_id
+        ->whereHas('order', function($query) {
+            $query->where('order_status', 'pending'); // Ensure the order's status is 'pending'
+        })
+        ->get();
+    
+    
         if ($menus->isEmpty()) {
             return redirect()->route('order.cart')->with('error', 'No items found for this order.');
         }
-
+    
         return view('manageOrder.editOrderCustomization', compact('menus'));
     }
+    
 
-
-
+    
 
 
     //update customization
@@ -73,44 +73,44 @@ class OrderController extends Controller
             'order_portion' => 'nullable|string',
             'order_remark' => 'nullable|string',
         ]);
-
+    
         // Check if an active order exists for the user
         $userId = Auth::id(); // Assuming the user is authenticated
         $order = Order::firstOrCreate(
             ['user_id' => $userId, 'order_status' => 'pending'],
             ['order_date' => now(), 'order_time' => now(), 'order_total' => 0]
         );
-
+    
         try {
             // Find the menu item and calculate the total price
             $menu = Menu::findOrFail($validated['menu_id']);
             $basePrice = $menu->price; // Original price of the menu item
             $totalPrice = $basePrice * $validated['order_quantity']; // Initial total price based on quantity
-
+    
             // Add RM2 if the portion is "large"
             if ($validated['order_portion'] === 'large') {
                 $totalPrice += 2 * $validated['order_quantity']; // Add RM2 for each large portion
             }
-
+    
             // Check if the item already exists in the cart
             $existingItem = OrderItems::where('order_id', $order->id)
                 ->where('menu_id', $validated['menu_id'])
                 ->first();
-
+    
             // Set default value for 'order_remark' if it is null
             $remark = $validated['order_remark'] ?? 'No Remark';
-
+    
             if ($existingItem) {
                 // If the item exists, update the quantity
                 $existingItem->order_quantity += $validated['order_quantity']; // Add to the existing quantity
                 $existingItem->order_portion = $validated['order_portion'] ?? $existingItem->order_portion; // Update the portion if given
                 $existingItem->order_remark = $remark; // Set the remark, default to 'No Remark' if not provided
                 $existingItem->save();
-
+    
                 // Update the order total
                 $order->order_total += $totalPrice; // Add the new quantity to the total, including the portion adjustment
                 $order->save();
-
+    
                 return redirect()->back()->with('success', 'Successfully Updated in Cart.');
             } else {
                 // If the item does not exist in the cart, create a new order item
@@ -121,11 +121,11 @@ class OrderController extends Controller
                     'order_portion' => $validated['order_portion'],
                     'order_remark' => $remark, // Set the remark, default to 'No Remark' if not provided
                 ]);
-
+    
                 // Update the order total
                 $order->order_total += $totalPrice; // Add the price for this new item, including any extra charges for large portion
                 $order->save();
-
+    
                 return redirect()->back()->with('success', 'Successfully Added to Cart.');
             }
         } catch (\Exception $e) {
@@ -133,7 +133,7 @@ class OrderController extends Controller
             return redirect()->back()->withErrors('Something went wrong. Please try again.');
         }
     }
-
+    
 
 
 
@@ -210,28 +210,28 @@ class OrderController extends Controller
 
 
     public function confirmOrder(Request $request, $orderId)
-    {
-        $order = Order::find($orderId);
+{
+    $order = Order::find($orderId);
 
-        if (!$order || $order->order_status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found or already processed.',
-            ], 400); // Use a 400 status code for client error
-        }
-
-        // Update the order status
-        $order->order_status = 'success';
-        $order->save();
-
-        // Flash a success message
-        session()->flash('order_placed', 'Order placed successfully!');
-
+    if (!$order || $order->order_status !== 'pending') {
         return response()->json([
-            'success' => true,
-            'message' => 'Order placed successfully!',
-        ], 200); // Use a 200 status code for success
+            'success' => false,
+            'message' => 'Order not found or already processed.',
+        ], 400); // Use a 400 status code for client error
     }
+
+    // Update the order status
+    $order->order_status = 'success';
+    $order->save();
+
+    // Flash a success message
+    session()->flash('order_placed', 'Order placed successfully!');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Order placed successfully!',
+    ], 200); // Use a 200 status code for success
+}
 
 
 
@@ -264,23 +264,23 @@ class OrderController extends Controller
 
 
     public function showHistory()
-    {
-        $userId = Auth::id(); // Get the authenticated user's ID
+{
+    $userId = Auth::id(); // Get the authenticated user's ID
 
-        // Fetch orders with their items and related menu data, ordered by the most recent date
-        $orders = Order::where('user_id', $userId)
-            ->with('items.menu') // Eager load items and menus
-            ->orderBy('created_at', 'desc') // Order by the most recent orders (descending)
-            ->get();
+    // Fetch orders with their items and related menu data, ordered by the most recent date
+    $orders = Order::where('user_id', $userId)
+        ->with('items.menu') // Eager load items and menus
+        ->orderBy('created_at', 'desc') // Order by the most recent orders (descending)
+        ->get();
 
-        // Redirect if no orders are found
-        if ($orders->isEmpty()) {
-            return redirect()->route('order.cart')->with('error', 'No orders found.');
-        }
-
-        // Pass the orders to the view
-        return view('manageOrder.orderHistory', compact('orders'));
+    // Redirect if no orders are found
+    if ($orders->isEmpty()) {
+        return redirect()->route('order.cart')->with('error', 'No orders found.');
     }
+
+    // Pass the orders to the view
+    return view('manageOrder.orderHistory', compact('orders'));
+}
 
 
     public function reorder(Request $request, $orderId)
@@ -359,20 +359,20 @@ class OrderController extends Controller
     }
 
     public function printInvoice($id)
-    {
-        // Retrieve the specific order
-        $order = Order::with('items.menu')->findOrFail($id);
+{
+    // Retrieve the specific order
+    $order = Order::with('items.menu')->findOrFail($id);
 
-        // Pass data to the view for PDF generation
-        $data = [
-            'order' => $order,
-            'items' => $order->items,
-        ];
+    // Pass data to the view for PDF generation
+    $data = [
+        'order' => $order,
+        'items' => $order->items,
+    ];
 
-        // Load the PDF view
-        $pdf = Pdf::loadView('manageOrder.receiptView', $data);
+    // Load the PDF view
+    $pdf = Pdf::loadView('manageOrder.receiptView', $data);
 
-        // Download the PDF
-        return $pdf->download('Order_Receipt' . $order->id . '.pdf');
-    }
+    // Download the PDF
+    return $pdf->download('Order_Receipt' . $order->id . '.pdf');
+}
 }

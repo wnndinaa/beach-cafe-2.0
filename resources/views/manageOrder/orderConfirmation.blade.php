@@ -8,7 +8,7 @@
         body {
             background-color: #f8f9fa;
         }
-    
+
         .cart-header {
             background: #fff;
             color: #000;
@@ -17,42 +17,42 @@
             font-size: 20px;
             font-weight: bold;
         }
-    
+
         .cart-items {
             width: 100%;
             padding: 20px 40px 20px 40px;
         }
-    
+
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-    
+
         .cart-item img {
             width: 200px;
             height: auto;
             object-fit: cover;
             border-radius: 5px;
         }
-    
+
         .cart-item-details {
             flex: 1;
             margin-left: 20px;
         }
-    
+
         .cart-item-name {
             font-size: 20px;
             font-weight: bold;
             margin: 0;
         }
-    
+
         .cart-item-price {
             color: #28a745;
             font-weight: bold;
         }
-    
+
         .cart-item-quantity button {
             background: #ddd;
             border: none;
@@ -60,19 +60,19 @@
             cursor: pointer;
             font-size: 16px;
         }
-    
+
         .cart-item-quantity .quantity-input {
             width: 40px;
             text-align: center;
         }
-    
+
         .total {
             font-size: 20px;
             font-weight: bold;
             color: #28a745;
             text-align: right;
         }
-    
+
         .checkout-btn {
             background: #dc3545;
             color: #fff;
@@ -84,11 +84,11 @@
             cursor: pointer;
             margin :20px 0 0 820px;
         }
-    
+
         .checkout-btn:hover {
             background: #c82333;
         }
-    
+
         .back-btn {
             background: darkgray;
             color: #fff;
@@ -100,7 +100,7 @@
             cursor: pointer;
             margin:20px 0 20px 0;
         }
-    
+
         .back-btn:hover {
             background: grey;
         }
@@ -130,7 +130,7 @@
                     <hr>
                     @endforeach
                     <div class="total">Total: RM{{ number_format($item->order->order_total, 2) }}</div>
-                   
+
                     <div class="cart-footer">
                         <button class="checkout-btn" onclick="confirmOrder({{ $item->order->id }})">Place Order</button>
                     </div>
@@ -173,6 +173,6 @@
     }
 </script>
 
-    
-    
+
+
 @endsection

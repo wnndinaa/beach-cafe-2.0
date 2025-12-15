@@ -1,125 +1,177 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2>Inventory Summary</h2>
-
-    <!-- Filter Options -->
-    <div class="mb-2">
-    <label for="filter-type">Filter Type:</label>
-    <select id="filter-type" class="form-select">
-            <option value="day">Day</option>
-            <option value="week">Week</option><!-- Added Date Range Option -->
-        </select>
-
-        <!-- Date Range Filters (only for Date Range selection) -->
-        <div id="week-filters" class="d-none mt-2">
-            <input type="date" id="filter-start-date" class="form-control" placeholder="Start Date" />
-            <input type="date" id="filter-end-date" class="form-control mt-2" placeholder="End Date" />
+<div class="inventory-wrapper">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Inventory Management</h2>
+            <a href="{{ route('inventory.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Inventory
+            </a>
         </div>
 
-     <!-- Single Date Filter (Day) -->
-     <input type="date" id="filter-date" class="form-control mt-2" />
-    </div>
+        @if ($message = Session::get('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> {{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
 
+        @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error!</strong> Please fix the errors below.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
 
-    <!-- Chart Container -->
-    <canvas id="barChart"></canvas>
-
-    <!-- Form to Update Inventory -->
-    <form action="{{ route('inventory.update') }}" method="POST" class="mt-4">
-        @csrf
-        <input type="date" name="date" class="form-control mb-3" required>
-        
-        @foreach(['Mee', 'Kopi', 'Telur', 'Ayam', 'Sayur (taugeh)', 'Sayur (bayam)', 'Sosej', 'Cili', 'Garam'] as $item)
-            <div class="mb-2">
-            <label for="item-{{ $loop->index }}" class="form-label">{{ $item }}</label>
-                            <input type="number" id="item-{{ $loop->index }}" name="items[{{ $item }}]" class="form-control @error('items.' . $item) is-invalid @enderror" placeholder="Enter quantity">
-                            @error('items.' . $item)
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                            @enderror
+        <div class="filter-section mb-3">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <form method="GET" action="{{ route('inventory.index') }}" id="filterForm">
+                        <label for="filterCategory" class="form-label">Filter by Category</label>
+                        <select class="form-select" id="filterCategory" name="category" onchange="document.getElementById('filterForm').submit();">
+                            <option value="all">All Categories</option>
+                            @foreach ($categories as $cat)
+                            <option value="{{ $cat }}" {{ $filterCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                        @if ($filterDate)
+                        <input type="hidden" name="date" value="{{ $filterDate }}">
+                        @endif
+                    </form>
+                </div>
+                <div class="col-md-3">
+                    <form method="GET" action="{{ route('inventory.index') }}" id="dateFilterForm">
+                        <label for="filterDate" class="form-label">Filter by Date</label>
+                        <input type="date" class="form-control" id="filterDate" name="date" value="{{ $filterDate ?? '' }}" onchange="document.getElementById('dateFilterForm').submit();">
+                        @if ($filterCategory && $filterCategory !== 'all')
+                        <input type="hidden" name="category" value="{{ $filterCategory }}">
+                        @endif
+                    </form>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                </div>
             </div>
-        @endforeach
+        </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                @if ($inventories->count() > 0)
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Unit Price</th>
+                            <th>Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                        $currentCategory = null;
+                        $today = \Carbon\Carbon::now()->format('Y-m-d');
+                        @endphp
+                        @foreach ($inventories as $inventory)
+                        @if ($currentCategory !== $inventory->category)
+                        @php
+                        $currentCategory = $inventory->category;
+                        @endphp
+                        <tr class="table-light">
+                            <td colspan="7" class="fw-bold text-muted">{{ $inventory->category }}</td>
+                        </tr>
+                        @endif
+                        @php
+                        $isToday = \Carbon\Carbon::parse($inventory->date)->format('Y-m-d') === $today;
+                        $isFilterDate = $filterDate && \Carbon\Carbon::parse($inventory->date)->format('Y-m-d') === $filterDate;
+                        @endphp
+                        <tr @if($isFilterDate) class="highlight-row" @endif>
+                            <td>{{ $inventory->item_name }}</td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ $inventory->category }}</span>
+                            </td>
+                            <td>{{ $inventory->quantity }}</td>
+                            <td>{{ $inventory->unit }}</td>
+                            <td>RM {{ number_format($inventory->unit_price, 2) }}</td>
+                            <td>{{ \Carbon\Carbon::parse($inventory->date)->format('d M Y') }} @if($isToday)<span class="badge bg-success">Today</span>@endif</td>
+                            <td class="text-center">
+                                <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ route('inventory.destroy', $inventory->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="p-5 text-center">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No inventory items found. <a href="{{ route('inventory.create') }}">Add one now!</a></p>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    var ctx = document.getElementById('barChart').getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: @json($data['labels']),  // Labels passed from the backend
-            datasets: [{
-                label: 'Inventory Levels',
-                data: @json($data['data']),  // Data passed from the backend
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    document.getElementById('filter-date').addEventListener('change', fetchFilteredData);
-    document.getElementById('filter-type').addEventListener('change', fetchFilteredData);
-    document.getElementById('filter-start-date').addEventListener('change', fetchFilteredData);
-    document.getElementById('filter-end-date').addEventListener('change', fetchFilteredData);
-
-    function fetchFilteredData() {
-        const type = document.getElementById('filter-type').value;
-        const date = document.getElementById('filter-date').value;
-        const startDate = document.getElementById('filter-start-date').value;
-        const endDate = document.getElementById('filter-end-date').value;
-
-        // Show week filters if the "week" option is selected
-        if (type === 'week') {
-            document.getElementById('week-filters').classList.remove('d-none');
-            if (!startDate || !endDate) return; // Don't fetch if no range is selected
-        } else {
-            document.getElementById('week-filters').classList.add('d-none');
-        }
-
-        // Make sure there's a date selected for day, or week
-        if (type === 'day' && !date) return;
-        if (type === 'week' && (!startDate || !endDate)) return;
-
-        let url = `/inventory/filter?type=${type}`;
-
-        if (type === 'day') {
-            url += `&date=${date}`;
-        } else if (type === 'week') {
-            url += `&start_date=${startDate}&end_date=${endDate}`;
-        }
-
-        // Fetch filtered data from the server
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    // Update the chart with the filtered data
-                    myChart.data.datasets[0].data = data.map(item => item.quantity);
-                    myChart.data.labels = data.map(item => item.date);  // Optional: Update labels if needed
-                    myChart.update();
-                } else {
-                    // Handle case where no data is found
-                    alert('No data found for the selected filter.');
-                    myChart.data.datasets[0].data = [];  // Clear data if no results
-                    myChart.update();
-                }
-            })
-            .catch(error => console.error('Error fetching data:', error));
+<style>
+    .inventory-wrapper {
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+        padding: 20px;
+        background-color: #fff;
+        margin-bottom: 20px;
     }
-</script>
+
+    .filter-section {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .filter-section .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .highlight-row {
+        background-color: #fff3cd !important;
+    }
+
+    .highlight-row:hover {
+        background-color: #ffe69c !important;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    h2 {
+        color: #333;
+        font-weight: 600;
+    }
+</style>
 @endsection

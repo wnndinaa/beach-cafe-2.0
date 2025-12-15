@@ -1,67 +1,61 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
-    <!-- Left side: Navbar -->
-    <a class="navbar-brand" href="{{ route('profile.edit') }}">Hello, {{ Auth::user()->name }}!</a>
-    
-    <!-- Right side: Links and Logout -->
-    <div style="display: flex; align-items: center;">
-        <!-- Common links for all users -->
-        <a class="navbar-brand" href="{{ route('dashboard') }}" style="margin-right: 15px;">Home</a>
-        <a class="navbar-brand" href="{{ route('view_all_feedback', ['id' => Auth::id()]) }}" style="margin-right: 15px;">Feedback</a>
-        
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 35px 5px; background-color: 	#4FBC76;">
+    <!-- Left side: Brand with Image -->
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('dashboard') }}" style="font-size: 28px; margin: 5px 0; color: white;">
+        <img src="{{ asset('asset/default-image/beach-cafe.png') }}" alt="Beach Cafe" style="height: 65px; width: 65px; filter: brightness(0) invert(1);">
 
-        <!-- Links only visible to staff -->
+        Beach Cafe
+    </a>
+
+    <!-- Center: Navigation Links -->
+    <div class="d-flex gap-4 flex-grow-1 justify-content-center mx-5">
+        <a href="{{ route('dashboard') }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">Home</a>
+        <a href="{{ route('view_all_feedback', ['id' => Auth::id()]) }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">Feedback</a>
+
         @if(Auth::user()->role === 'staff')
-        
-        <a class="navbar-brand" href="{{ route('staff-menu') }}" style="margin-right: 15px;">Menu</a>
-        <a class="navbar-brand" href="{{ route('staff.ordersIndex') }}" style="margin-right: 15px;">Order</a>
-        <a class="navbar-brand" href="{{ route('inventory.index') }}" style="margin-right: 15px;">Inventory</a>
-        <a class="navbar-brand" href="{{ route('profile.index')}}" style="margin-right: 15px;">Profiles</a>
-            @endif
+        <a href="{{ route('staff-menu') }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">Menu</a>
+        <a href="{{ route('staff.ordersIndex') }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">Order</a>
+        <a href="{{ route('inventory.index') }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">Inventory</a>
+        <!-- <a href="{{ route('profile.index')}}" class="text-white text-decoration-none" style="font-size: 20px;">Profiles</a> -->
+        @endif
 
-            @if(Auth::user()->role === 'customer')
-            
-        <a class="navbar-brand" href="{{ route('menu') }}" style="margin-right: 15px;">Menu</a>
-            <a class="navbar-brand" href="{{ route('order.cart') }}" style="margin-right: 15px;">
-            Cart<span class="badge bg-primary rounded-circle">{{ $cartItemCount ?? 0 }}</span></a>
-        <a class="navbar-brand" href="{{ route('order.history') }}" style="margin-right: 15px;">History</a>
-            <a class="navbar-brand" href="{{ route('profile.index')}}" style="margin-right: 15px;">Profiles</a>
-            @endif
+        @if(Auth::user()->role === 'customer')
+        <a href="{{ route('menu') }}" class="text-white text-decoration-none" style="font-size: 20px;">Menu</a>
+        <a href="{{ route('order.cart') }}" class="text-white text-decoration-none position-relative" style="font-size: 20px; font-weight: bold;">
+            Cart<span class="badge bg-primary rounded-circle" style="position: absolute; top: -8px; right: -8px; font-size: 10px;">{{ $cartItemCount ?? 0 }}</span>
+        </a>
+        <a href="{{ route('order.history') }}" class="text-white text-decoration-none" style="font-size: 20px; font-weight: bold;">History</a>
+        @endif
+    </div>
 
-            
-            
-
-        <!-- Logout -->
-        <form method="POST" action="{{ route('logout') }}" style="margin: 0; display: inline;">
-            @csrf
-            <a href="{{ route('logout') }}" class="navbar-brand"
-               style="margin-right: 0; text-decoration: none;"
-               onclick="event.preventDefault(); this.closest('form').submit();">
-                {{ __('Log Out') }}
-            </a>
-        </form>
+    <!-- Right side: Module Name and User Profile Dropdown -->
+    <div class="d-flex align-items-center gap-4">
+        <span style="font-size: 18px; font-weight: 600; text-transform: capitalize; color: white;">{{ Auth::user()->role }}</span>
+        <div class="dropdown">
+            <button class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0;">
+                <span style="font-size: 16px;">Hi {{ Auth::user()->name }}</span>
+                <span class="badge rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; background-color: rgba(255, 255, 255, 0.3); color: white;">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item" href="{{ route('profile.index') }}" style="font-size: 14px;">
+                        Profile
+                    </a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                        @csrf
+                        <a href="{{ route('logout') }}" class="dropdown-item" style="font-size: 14px;"
+                            onclick="event.preventDefault(); this.closest('form').submit();">
+                            Log Out
+                        </a>
+                    </form>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
-
-<nav id="bottom-navbar" class="navbar navbar-expand-lg navbar-dark bg-dark fixed-bottom" style="transition: bottom 0.3s; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;">
-    <a class="navbar-brand" href="#about" style="color: #fff;">About Us</a>
-    <p style="color: #fff; text-align: center; max-width: 600px; font-size:10px;">
-        Where we serve delicious food and refreshing drinks by the sea. Our cozy café offers the perfect spot to relax, enjoy great company, and savor our specially crafted menu, made with the freshest ingredients.
-    </p>
-</nav>
-
-<script>
-    var prevScrollpos = window.pageYOffset;
-    var navbar = document.getElementById("bottom-navbar"); // Select the navbar by ID
-
-    window.onscroll = function() {
-        var currentScrollPos = window.pageYOffset;
-
-        if (prevScrollpos > currentScrollPos) {
-            navbar.style.bottom = "0"; // Show the navbar
-        } else {
-            navbar.style.bottom = "-100px"; // Hide the navbar
-        }
-
-        prevScrollpos = currentScrollPos;
-    }
-</script>

@@ -10,49 +10,124 @@ class InventoryController extends Controller
 {
     public function index()
     {
-        $data['labels'] = Inventory::pluck('item_name');
-        $data['data'] = Inventory::pluck('quantity');
-        return view('Inventory.index', compact('data'));
+        $filterCategory = request('category');
+        $filterDate = request('date');
+
+        $query = Inventory::query();
+
+        if ($filterCategory && $filterCategory !== 'all') {
+            $query->where('category', $filterCategory);
+        }
+
+        if ($filterDate) {
+            $query->whereDate('date', $filterDate);
+        }
+
+        $inventories = $query->orderBy('category')
+            ->orderBy('item_name')
+            ->get();
+
+        $categories = Inventory::distinct()->pluck('category')->sort();
+        
+        return view('Inventory.index', compact('inventories', 'categories', 'filterCategory', 'filterDate'));
     }
 
-    public function update(Request $request)
+    public function create()
     {
-        foreach ($request->items as $item => $quantity) {
-            Inventory::updateOrCreate(
-                ['item_name' => $item, 'date' => $request->date],
-                ['quantity' => $quantity]
-            );
+        $itemNames = Inventory::distinct()->pluck('item_name')->sort();
+        $categories = Inventory::distinct()->pluck('category')->sort();
+        return view('Inventory.form', compact('itemNames', 'categories'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:0',
+            'unit_price' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
+            'date' => 'required|date',
+            'item_name_new' => 'nullable|string|max:255',
+            'category_new' => 'nullable|string|max:255',
+        ]);
+
+        if ($request->item_name_new) {
+            $validated['item_name'] = $request->item_name_new;
         }
-        return redirect()->back()->with('success', 'Inventory updated!');
+
+        if ($request->category_new) {
+            $validated['category'] = $request->category_new;
+        }
+
+        unset($validated['item_name_new'], $validated['category_new']);
+
+        Inventory::create($validated);
+        return redirect()->route('inventory.index')->with('success', 'Inventory item created successfully!');
+    }
+
+    public function edit($id)
+    {
+        $inventory = Inventory::findOrFail($id);
+        $itemNames = Inventory::distinct()->pluck('item_name')->sort();
+        $categories = Inventory::distinct()->pluck('category')->sort();
+        return view('Inventory.form', compact('inventory', 'itemNames', 'categories'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'item_name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:0',
+            'unit_price' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:50',
+            'date' => 'required|date',
+            'item_name_new' => 'nullable|string|max:255',
+            'category_new' => 'nullable|string|max:255',
+        ]);
+
+        if ($request->item_name_new) {
+            $validated['item_name'] = $request->item_name_new;
+        }
+
+        if ($request->category_new) {
+            $validated['category'] = $request->category_new;
+        }
+
+        unset($validated['item_name_new'], $validated['category_new']);
+
+        $inventory = Inventory::findOrFail($id);
+        $inventory->update($validated);
+        return redirect()->route('inventory.index')->with('success', 'Inventory item updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $inventory = Inventory::findOrFail($id);
+        $inventory->delete();
+        return redirect()->route('inventory.index')->with('success', 'Inventory item deleted successfully!');
     }
 
     public function filter(Request $request)
-{
-    // Get the parameters from the request
-    $date = $request->date;
-    $type = $request->type;
-    $startDate = $request->start_date;  // New start date for range filter
-    $endDate = $request->end_date;  // New end date for range filter
+    {
+        $date = $request->date;
+        $type = $request->type;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
 
-    // Initialize the query for Inventory
-    $query = Inventory::query();
+        $query = Inventory::query();
 
-    // Filter based on the 'type' (day or week)
-    if ($type === 'day') {
-        // Filter by a specific date
-        $query->whereDate('date', Carbon::parse($date)->format('Y-m-d'));    
-    } elseif ($type === 'week') {
-        // Filter by a date range (start date to end date)
-        $query->whereBetween('date', [
-            Carbon::parse($startDate)->format('Y-m-d'),
-            Carbon::parse($endDate)->format('Y-m-d')
-        ]);
-    }
+        if ($type === 'day') {
+            $query->whereDate('date', Carbon::parse($date)->format('Y-m-d'));    
+        } elseif ($type === 'week') {
+            $query->whereBetween('date', [
+                Carbon::parse($startDate)->format('Y-m-d'),
+                Carbon::parse($endDate)->format('Y-m-d')
+            ]);
+        }
 
-    // Get filtered data (only 'date' and 'quantity' for the chart)
-    $filteredData = $query->get(['date', 'quantity']);
-
-    // Return filtered data as a JSON response
-    return response()->json($filteredData);
+        $filteredData = $query->get(['date', 'quantity']);
+        return response()->json($filteredData);
     }
 }

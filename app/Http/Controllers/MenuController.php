@@ -10,7 +10,8 @@ use App\Models\Menu;
 class MenuController extends Controller
 {
 
-    public function dashboardMenu() {
+    public function dashboardMenu()
+    {
         $menuItems = Menu::all();
 
         return view('dashboard', [
@@ -20,10 +21,13 @@ class MenuController extends Controller
 
     public function index()
     {
-        $menuItems = Menu::all();
+        $menuItems = Menu::withAvg('feedbacks', 'rating')
+            ->withCount('feedbacks')
+            ->get();
 
         return view('manageMenu.menu', compact('menuItems'));
     }
+
 
     public function staffMenu()
     {
@@ -60,7 +64,7 @@ class MenuController extends Controller
     {
         return view('manageMenu.addmenu');
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([

@@ -109,8 +109,16 @@
                             <p class="card-text">RM {{ number_format($item->price, 2) }}</p>
                             <p class="card-text">Status: {{ $item->status }}</p>
                             <div class="d-flex justify-content-center">
-                                <!-- Add Feedback button remains enabled -->
-                                <a href="{{ route('view_add_Feedback', ['menu_id' => $item->id]) }}" class="btn btn-primary me-3">Add Feedback</a>
+                                <!-- Star rating -->
+                                @if ($item->feedbacks_count > 0)
+                                    <p class="card-text">
+                                        Rating: ⭐ {{ number_format($item->feedbacks_avg_rating, 1) }} / 5
+                                    </p>
+                                @else
+                                    <p class="card-text text-muted">
+                                        Rating: No ratings yet
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -137,10 +145,18 @@
                             <p class="card-text">RM {{ number_format($item->price, 2) }}</p>
                             <p class="card-text">Status: {{ $item->status }}</p>
                             <div class="d-flex justify-content-center">
-                                <!-- Add Feedback button remains enabled -->
                                 @if (Auth::user()->role == 'customer')
                                 &nbsp;&nbsp;&nbsp;
-                                <a href="{{ route('view_add_Feedback', ['menu_id' => $item->id]) }}" class="btn btn-primary me-3">Add Feedback</a>
+                                    <!-- Star rating -->
+                                    @if ($item->feedbacks_count > 0)
+                                        <p class="card-text">
+                                            Rating: ⭐ {{ number_format($item->feedbacks_avg_rating, 1) }} / 5
+                                        </p>
+                                    @else
+                                        <p class="card-text text-muted">
+                                            Rating: No ratings yet
+                                        </p>
+                                    @endif
                                 @endif
                             </div>
                         </div>
@@ -168,12 +184,19 @@
                             <p class="card-text">RM {{ number_format($item->price, 2) }}</p>
                             <p class="card-text">Status: {{ $item->status }}</p>
                             <div class="d-flex justify-content-center">
-                                <!-- Add Feedback button remains enabled -->
                                 &nbsp;&nbsp;&nbsp;
                             @if (Auth::user()->role == 'customer')
-                            
                             &nbsp;&nbsp;&nbsp;
-                            <a href="{{ route('view_add_Feedback', ['menu_id' => $item->id]) }}" class="btn btn-primary me-3">Add Feedback</a>
+                                    <!-- Star rating -->
+                                    @if ($item->feedbacks_count > 0)
+                                        <p class="card-text">
+                                            Rating: ⭐ {{ number_format($item->feedbacks_avg_rating, 1) }} / 5
+                                        </p>
+                                    @else
+                                        <p class="card-text text-muted">
+                                            Rating: No ratings yet
+                                        </p>
+                                    @endif
                             @endif
                             </div>
                         </div>

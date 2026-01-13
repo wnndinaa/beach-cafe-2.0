@@ -1,97 +1,86 @@
 @extends('layouts.app')
 
 @section('content')
-    @php
-        if ($user->role == 'customer') {
-            $color = 'bg-primary';
-        } elseif ($user->role == 'staff') {
-            $color = 'bg-success';  
-        }
-    @endphp
+@php
+    $color = $user->role === 'staff' ? 'bg-success' : 'bg-primary';
+@endphp
 
-    <div class="container mt-4">
+<div class="container mt-4">
 
     @if (session('blue-message'))
-        <div class="alert alert-primary text-primary" id="quick-message">
-            {{ session('blue-message') }}
-        </div>
+        <div class="alert alert-primary">{{ session('blue-message') }}</div>
     @elseif (session('red-message'))
-        <div class="alert alert-danger text-danger" id="quick-message">
-            {{ session('red-message') }}
-        </div>
+        <div class="alert alert-danger">{{ session('red-message') }}</div>
     @endif
 
-        <div class="card shadow-sm border-0 rounded">
-            <div class="card-header {{ $color }} text-white rounded-top">
-                <h5 class="mb-0">Feedback List</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-hover table-bordered align-middle">
-                    <thead class="bg-primary text-white">
-                        <tr>
-                            <th scope="col" class="text-center">No</th>
+    <div class="card shadow-sm border-0 rounded">
+        <div class="card-header {{ $color }} text-white">
+            <h5 class="mb-0">Feedback List</h5>
+        </div>
 
-                        @if ($user->role == 'Staff')
-                            <th scope="col">Customer Name</th>
-                        @endif
-                        
-                        <th scope="col">Menu</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Rating</th>
-                            <th scope="col" class="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($feedbacks as $index => $feedback)
-                            <tr class="{{ $index % 2 === 0 ? 'table-light' : 'table-secondary' }}">
-                                <th scope="row" class="text-center fw-bold">{{ $index + 1 }}</th>
+        <div class="card-body">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr class="text-center">
+                        <th style="width: 5%">No</th>
+                        <th style="width: 20%">Order ID</th>
+                        <th style="width: 30%">Date</th>
+                        <th style="width: 15%">Rating</th>
+                        <th style="width: 15%">Action</th>
+                    </tr>
+                </thead>
 
-                            @if ($user->role == 'Staff')
-                                <td>{{ $feedback->user->name }}</td>
-                            @endif
+                <tbody>
+                {{-- STAFF VIEW (GROUPED BY ORDER ID) --}}
+                @if ($user->role === 'staff')
 
-                                <td>{{ $feedback->menu->name }}</td>
+                    @php $no = 1; @endphp
+
+                    @foreach ($feedbacks as $orderId => $orderFeedbacks)
+                        @foreach ($orderFeedbacks as $feedback)
+                            <tr class="text-center">
+                                <td>{{ $no++ }}</td>
+                                <td><strong>#{{ $orderId }}</strong></td>
                                 <td>{{ $feedback->date }}</td>
                                 <td>
-                                    <span class="badge bg-info text-dark">{{ $feedback->rating }} 
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                    </span>
+                                    {{ $feedback->rating }}
+                                    <i class="bi bi-star-fill text-warning"></i>
                                 </td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center">
-                                        <a href="{{ route('view_feedback_details', ['id' => $feedback->id]) }}" class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="bi bi-eye"></i> View
-                                        </a>
-                                    
-                                    @if ($user->role == 'customer')
-                                        <a href="{{ route('edit_feedback_details', ['id' => $feedback->id]) }}" class="btn btn-sm btn-outline-warning me-1">
-                                            <i class="bi bi-eye"></i> Edit
-                                        </a>
-                                        
-                                        <form action="{{ route('delete_feedback', ['id' => $feedback->id]) }}" method="post" onsubmit="return confirmDelete()">
-                                            @csrf
-                                            @method('DELETE')
-                                        
-                                            <button class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
-                                        
-                                        <script>
-                                            function confirmDelete() {
-                                                return confirm("Are you sure you want to delete this feedback?");
-                                            }
-                                        </script>
-                                        
-                                    @endif
-
-                                    </div>
+                                <td>
+                                    <a href="{{ route('view_feedback_details', $feedback->id) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+
+                {{-- CUSTOMER VIEW --}}
+                @else
+
+                    @foreach ($feedbacks as $index => $feedback)
+                        <tr class="text-center">
+                            <td>{{ $index + 1 }}</td>
+                            <td><strong>#{{ $feedback->order_id }}</strong></td>
+                            <td>{{ $feedback->date }}</td>
+                            <td>
+                                {{ $feedback->rating }}
+                                <i class="bi bi-star-fill text-warning"></i>
+                            </td>
+                            <td>
+                                <a href="{{ route('view_feedback_details', $feedback->id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                @endif
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 @endsection

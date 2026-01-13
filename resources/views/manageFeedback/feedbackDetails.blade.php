@@ -19,7 +19,7 @@
             <div class="card-body">
                 <div class="mb-4">
                     <label for="menuName" class="form-label fw-semibold">Menu</label>
-                    <input type="text" class="form-control border-0 bg-light" id="menuName" 
+                    <input type="text" class="form-control border-0 bg-light" id="menuName"
                            value="{{ $feedback->menu->name }}" readonly>
                 </div>
                 <div class="mb-4">

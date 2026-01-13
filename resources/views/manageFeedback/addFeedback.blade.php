@@ -1,4 +1,4 @@
-@extends('layouts.app')
+                                                                                                       @extends('layouts.app')
 
 @section('content')
 
@@ -22,7 +22,7 @@
                     @csrf
                     <input type="hidden" name="user_id" value="{{ Auth::id() }}">
                     <input type="hidden" name="menu_id" value="{{ $menu->id }}">
-                
+
                     <div class="mb-3">
                         <label for="menuName" class="form-label fw-semibold">Menu</label>
                         <input type="text" class="form-control" id="menuName" value="{{ $menu->name }}" disabled>

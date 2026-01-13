@@ -43,26 +43,28 @@ Route::middleware('auth')->group(function () {
     // Role editing routes
     Route::get('/profile/list/edit-role/{id}', [ProfileController::class, 'editRole'])->name('profile.editRole');
     Route::patch('/profile/list/edit-role/{id}', [ProfileController::class, 'updateRole'])->name('profile.updateRole'); // Changed name to avoid duplication
-  
-  Route::get('/list_of_feedback/{id}', [FeedbackController::class, 'viewListOFeedback'])->name('view_all_feedback');
-  Route::get('/add_feedback/{menu_id}', [FeedbackController::class, 'viewAddFeedback'])->name('view_add_Feedback');
-  Route::post('/add_feedback/create', [FeedbackController::class, 'createFeedback'])->name('create_feedback');
-  Route::get('/menu', [MenuController::class, 'index'])->name('menu');
-  
-  // MODULE FEEDBACK
-Route::get('/dummydisplay', [FeedbackController::class, 'displaydummy'])->name('dummydisplay');
-Route::get('/list_of_feedback/{id}', [FeedbackController::class, 'viewListOFeedback'])->name('view_all_feedback');
-Route::get('/feedback_details/{id}', [FeedbackController::class, 'viewFeedbackDetails'])->name('view_feedback_details');
-Route::get('/edit_feedback_details/{id}', [FeedbackController::class, 'viewEditFeedback'])->name('edit_feedback_details');
-Route::get('/add_feedback/{menu_id}', [FeedbackController::class, 'viewAddFeedback'])->name('view_add_Feedback');
-Route::post('/add_feedback/create', [FeedbackController::class, 'createFeedback'])->name('create_feedback');
 
-// inventory
-Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
-Route::post('/inventory/update', [InventoryController::class, 'update'])->name('inventory.update');
-// Route for filtering inventory data
-Route::get('/inventory/filter', [InventoryController::class, 'filter'])->name('inventory.filter');
-Route::middleware('auth')->group(function () {
+    Route::get('/list_of_feedback/{id}', [FeedbackController::class, 'viewListOFeedback'])->name('view_all_feedback');
+    Route::get('/add_feedback/{menu_id}', [FeedbackController::class, 'viewAddFeedback'])->name('view_add_Feedback');
+    Route::post('/add_feedback/create', [FeedbackController::class, 'createFeedback'])->name('create_feedback');
+    Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+
+    // MODULE FEEDBACK
+    Route::get('/dummydisplay', [FeedbackController::class, 'displaydummy'])->name('dummydisplay');
+    Route::get('/list_of_feedback/{id}', [FeedbackController::class, 'viewListOFeedback'])->name('view_all_feedback');
+    Route::get('/feedback_details/{id}', [FeedbackController::class, 'viewFeedbackDetails'])->name('view_feedback_details');
+    Route::get('/edit_feedback_details/{id}', [FeedbackController::class, 'viewEditFeedback'])->name('edit_feedback_details');
+    Route::get('/add_feedback/{menu_id}', [FeedbackController::class, 'viewAddFeedback'])->name('view_add_Feedback');
+    Route::post('/add_feedback/create', [FeedbackController::class, 'createFeedback'])->name('create_feedback');
+
+    // inventory
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
+    Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::get('/inventory/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
+    Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
+    Route::get('/inventory/filter', [InventoryController::class, 'filter'])->name('inventory.filter');
 });
 
 //customer menu
@@ -109,6 +111,6 @@ Route::get('/staff/orders/{id}', [OrderController::class, 'showOrder'])->name('s
 
 Route::patch('/update_feedback/feedback/{id}', [FeedbackController::class, 'updateFeedback'])->name('update_feedback');
 Route::delete('/delete_feedback/{id}', [FeedbackController::class, 'deleteFeedback'])->name('delete_feedback');
-});
 
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';

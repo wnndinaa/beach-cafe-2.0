@@ -9,6 +9,11 @@ class Inventory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['item_name', 'quantity', 'date'];
+    protected $fillable = ['item_name', 'category', 'quantity', 'unit_price', 'unit', 'date'];
+
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'date' => 'date',
+    ];
 }
 
